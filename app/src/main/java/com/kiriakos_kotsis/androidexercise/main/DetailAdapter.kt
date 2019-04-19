@@ -103,7 +103,7 @@ class DetailAdapter(private val comments:ArrayList<Comment>, private val current
                 }
                 val task = DetailActivity.CommentsAsyncTask(context as DetailActivity)
                 task.execute("POST", commentJSON.toString())
-                Toast.makeText(context, "Comment posted successfully.", Toast.LENGTH_LONG)
+                Toast.makeText(context, "Comment posted successfully.", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -120,7 +120,7 @@ class DetailAdapter(private val comments:ArrayList<Comment>, private val current
         }
 
         companion object {
-            const val NAME_PATTERN = "^[a-z]+(\\s?[a-z])+$"
+            const val NAME_PATTERN = "^[a-z]+(\\s?[a-z])*$"
         }
     }
 
