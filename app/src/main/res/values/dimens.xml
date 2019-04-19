@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="master_image_width">64dp</dimen>
+    <dimen name="master_image_height">48dp</dimen>
+    <dimen name="detail_image_height">256dp</dimen>
+    <dimen name="detail_comment_edit_height">80dp</dimen>
+
+</resources>
