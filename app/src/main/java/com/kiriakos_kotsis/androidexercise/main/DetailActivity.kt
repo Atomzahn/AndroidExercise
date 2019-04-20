@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.kiriakos_kotsis.androidexercise.R
 import com.kiriakos_kotsis.androidexercise.entities.Comment
 import com.kiriakos_kotsis.androidexercise.entities.Post
+import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.*
-import java.net.HttpURLConnection
+import java.lang.Exception
 import java.net.URL
 
 class DetailActivity : AppCompatActivity() {
@@ -27,7 +27,7 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
         currentPost = if(savedInstanceState != null) savedInstanceState.getSerializable(MasterAdapter.PostHolder.POST_KEY) as Post
-                      else intent.extras.get(MasterAdapter.PostHolder.POST_KEY) as Post
+                      else intent?.extras?.get(MasterAdapter.PostHolder.POST_KEY) as Post
         recyclerView = findViewById(R.id.detail_recycler_view)
         linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
@@ -43,41 +43,25 @@ class DetailActivity : AppCompatActivity() {
 
     class CommentsAsyncTask(private val activity:DetailActivity): AsyncTask<String, Unit, Unit>() {
 
-        override fun doInBackground(vararg p0: String?) {
+        override fun doInBackground(vararg p0: String) {
             val url = URL(MasterActivity.request_url + "posts/" + activity.currentPost.id + "/comments")
-            var httpClient:HttpURLConnection? = null
 
-            if (p0[0].equals("POST")) {
+            if (p0[0] == "POST") {
+                val client = OkHttpClient()
+                val body:RequestBody = RequestBody.create(MediaType.get("application/json; charset=utf-8"), p0[1])
+                val request:Request = Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build()
                 try {
-                    httpClient = url.openConnection() as HttpURLConnection
-                    httpClient.requestMethod = "POST"
-                    httpClient.readTimeout = 10000
-                    httpClient.connectTimeout = 15000
-                    httpClient.requestMethod = "POST"
-                    httpClient.doInput = true
-                    httpClient.doOutput = true
-                    httpClient.setRequestProperty("Content-Type", "application/json")
-                    httpClient.connect()
-                    val outputStream = httpClient.outputStream
-                    val writer = BufferedWriter(OutputStreamWriter(outputStream, "UTF-8"))
-                    writer.write(p0[1])
-                    writer.flush()
-                    writer.close()
-                    outputStream.close()
-                    if (httpClient.responseCode == HttpURLConnection.HTTP_OK) {
-                        val stream = BufferedInputStream(httpClient.inputStream)
-                        val data: String = readStream(inputStream = stream)
+                    val response:Response = client.newCall(request).execute()
+                    if(response.isSuccessful)
                         Toast.makeText(activity, "Comment posted successfully.", Toast.LENGTH_LONG).show()
-                        println("data: $data")
-                    } else {
-                        println("ERROR ${httpClient.responseCode}")
+                    else
+                        Toast.makeText(activity, "An error occurred while posting comment.", Toast.LENGTH_LONG).show()
+                } catch (e:Exception) {
+                        e.printStackTrace()
                     }
-                }
-                catch (e:Exception) {
-                    e.printStackTrace()
-                } finally {
-                    httpClient?.disconnect()
-                }
             }
             else {
                 // Retrieve all comments
@@ -98,13 +82,6 @@ class DetailActivity : AppCompatActivity() {
 
         override fun onPostExecute(result: Unit?) {
             activity.updateUI()
-        }
-
-        fun readStream(inputStream: BufferedInputStream): String {
-            val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-            val stringBuilder = StringBuilder()
-            bufferedReader.forEachLine { stringBuilder.append(it) }
-            return stringBuilder.toString()
         }
     }
 }
