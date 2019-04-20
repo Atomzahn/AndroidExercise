@@ -2,6 +2,7 @@ package com.kiriakos_kotsis.androidexercise.main
 
 import android.os.AsyncTask
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -66,6 +67,7 @@ class DetailActivity : AppCompatActivity() {
                     if (httpClient.responseCode == HttpURLConnection.HTTP_OK) {
                         val stream = BufferedInputStream(httpClient.inputStream)
                         val data: String = readStream(inputStream = stream)
+                        Toast.makeText(activity, "Comment posted successfully.", Toast.LENGTH_LONG).show()
                         println("data: $data")
                     } else {
                         println("ERROR ${httpClient.responseCode}")
