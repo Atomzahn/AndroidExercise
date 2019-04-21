@@ -9,8 +9,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import android.os.AsyncTask
 import androidx.recyclerview.widget.LinearLayoutManager
+import java.lang.ref.WeakReference
 import java.net.URL
 
+/**
+ * The main activity of this project. Retrieves all posts from "http://excercise.born-to-create.de/posts".
+ */
 class MasterActivity : AppCompatActivity() {
 
     private var masterAdapter:MasterAdapter? = null
@@ -30,38 +34,53 @@ class MasterActivity : AppCompatActivity() {
         task.execute()
     }
 
+    /**
+     * Initializes the adapter after retrieving all posts and sets it to the RecyclerView.
+     */
     fun updateUI() {
         masterAdapter = MasterAdapter(posts)
         recyclerView.adapter = masterAdapter
     }
 
     companion object {
-        const val request_url:String = "http://excercise.born-to-create.de/"
-    }
+        const val request_url: String = "http://excercise.born-to-create.de/"
 
-    private class PostsAsyncTask(private val activity:MasterActivity): AsyncTask<Unit, Unit, Unit>() {
+        /**
+         * Background task for receiving all posts.
+         */
+        private class PostsAsyncTask internal constructor(context: MasterActivity) : AsyncTask<Unit, Unit, Unit>() {
 
-        override fun doInBackground(vararg p0: Unit?) {
-            // Retrieve all posts
-            val url:String = request_url + "posts"
-            val jsonResponse = JSONArray(URL(url).readText())
+            // WeakReference for preventing memory leaks
+            private val activityReference:WeakReference<MasterActivity> = WeakReference(context)
 
-            for(i in 0 until jsonResponse.length()) {
-                val postJson:JSONObject = jsonResponse.getJSONObject(i)
-
-                val id:Int = postJson.getInt("id")
-                val author:String = postJson.getString("author")
-                val title:String = postJson.getString("title")
-                val thumbnail:String = postJson.getString("thumbnail")
-                val image:String = postJson.getString("image")
-                val content:String = postJson.getString("content")
-
-                activity.posts.add(Post(id, author, title, thumbnail, image, content))
+            override fun onPreExecute() {
+                val activity = activityReference.get()
+                if (activity == null || activity.isFinishing)
+                    return
             }
-        }
 
-        override fun onPostExecute(result: Unit?) {
-            activity.updateUI()
+            override fun doInBackground(vararg p0: Unit?) {
+                // Retrieve all posts
+                val url: String = request_url + "posts"
+                val jsonResponse = JSONArray(URL(url).readText())
+
+                for (i in 0 until jsonResponse.length()) {
+                    val postJson: JSONObject = jsonResponse.getJSONObject(i)
+
+                    val id: Int = postJson.getInt("id")
+                    val author: String = postJson.getString("author")
+                    val title: String = postJson.getString("title")
+                    val thumbnail: String = postJson.getString("thumbnail")
+                    val image: String = postJson.getString("image")
+                    val content: String = postJson.getString("content")
+
+                    activityReference.get()!!.posts.add(Post(id, author, title, thumbnail, image, content))
+                }
+            }
+
+            override fun onPostExecute(result: Unit?) {
+                activityReference.get()!!.updateUI()
+            }
         }
     }
 }
