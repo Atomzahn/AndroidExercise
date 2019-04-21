@@ -126,17 +126,29 @@ class DetailAdapter(private val comments:ArrayList<Comment>, private val current
             }
         }
 
-        // Checks if given CharSequence is a correct e-mail address
+        /**
+         * Checks if given CharSequence is a correct e-mail address
+         * @param email The e-mail address to match.
+         * @return Returns true if it matches, otherwise false.
+         */
         private fun isValidEmail(email:CharSequence) : Boolean {
             return !TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
         }
 
-        // Checks if given CharSequence is a correct name
+        /**
+         * Checks if given CharSequence is a correct name.
+         * @param name The name to match.
+         * @return Returns true if it matches, otherwise false.
+         */
         private fun isValidName(name:CharSequence) : Boolean {
             return !TextUtils.isEmpty(name) && name.length <= 100 && Pattern.compile(NAME_PATTERN).matcher(name).matches()
         }
 
-        // Checks if the given CharSequence is not empty nor exceeds 300 characters
+        /**
+         * Checks if the given CharSequence is not empty nor exceeds 300 characters.
+         * @param comment The comment to match.
+         * @return Returns true if it matches, otherwise false.
+         */
         private fun isValidComment(comment:CharSequence) : Boolean {
             return !TextUtils.isEmpty(comment) && comment.length <= 300
         }
